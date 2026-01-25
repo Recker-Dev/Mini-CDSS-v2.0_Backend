@@ -1,7 +1,7 @@
 from app.db.collections import get_doctor_collection
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from backend.app.models.doctors import DoctorInDB
+from app.models.doctors import DoctorInDB
 
 
 async def find_doctor_by_id(doc_id: str) -> DoctorInDB | None:

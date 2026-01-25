@@ -17,15 +17,16 @@ class DoctorLogin(DoctorBase):
 class DoctorCreate(DoctorBase):
     name: str
     password: str
-    speciality: str = ""
+    speciality: Optional[str] = Field(default="")
 
 
 ## "Source of Truth" in MongoDB
 class DoctorInDB(DoctorBase):
-    model_config = ConfigDict(validate_by_name=True)  ## Enables the mapping
-
-    id: Optional[str] = Field(  # Maps "_id" from input to `id` field
-        default=None, alias="_id"
+    model_config = ConfigDict(validate_by_name=True) ## Enables Mapping
+    id: Optional[str] = (
+        Field(  # Maps "_id" from Mongo to `id` field ; but returns as "id" when serialized
+            default=None, alias="_id", serialization_alias="id", validation_alias="_id"
+        )
     )
     name: str
     hashed_password: str
@@ -44,3 +45,9 @@ class DoctorInDB(DoctorBase):
 ## Public Profile (No sensitive data)
 class DoctorPublic(DoctorInDB):
     hashed_password: str = Field(exclude=True)
+
+
+class AuthResult(BaseModel):
+    id: str
+    name: str  
+    authenticated: bool = True
