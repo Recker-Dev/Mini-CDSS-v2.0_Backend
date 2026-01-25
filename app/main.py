@@ -1,11 +1,24 @@
-import asyncio
-from app.db.health import check_mongo_connect
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from app.core.setup import database_setup_ops
 
 
-async def main():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup
+    await database_setup_ops()
+    yield
 
-    await check_mongo_connect()
+    # shutdown
+    # await cleanup_ops()
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+app = FastAPI(lifespan=lifespan)
+
+
+@app.get("/")
+async def ping():
+    return {"pong"}
+
+
+# @app.post("/create-doc")
