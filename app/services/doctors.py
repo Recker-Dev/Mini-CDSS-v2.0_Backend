@@ -38,7 +38,7 @@ async def get_doctor_profile(doc_id: str) -> DoctorPublic:
     existing = await find_doctor_by_id(doc_id)
     ## Check if entry exist
     if existing is None:
-        raise ValueError(f"{doc_id} not found.")
+        raise ValueError(f"{doc_id} doctor not found.")
 
     return DoctorPublic.model_validate(existing.model_dump())
 
@@ -62,6 +62,6 @@ async def delete_doctor_profile(doc_id: str) -> DoctorPublic:
     deleted_result = await delete_doctor_by_id(doc_id)
 
     if deleted_result is None:
-        raise ValueError(f"{doc_id} not found.")
+        raise ValueError(f"{doc_id} doctor not found.")
 
     return DoctorPublic.model_validate(deleted_result.model_dump())
