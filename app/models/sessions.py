@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import List, Literal, Optional
+from datetime import datetime
+from typing import Literal, Optional
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -19,7 +19,9 @@ class SessionCreate(SessionBase):
 
 ## "Source of Truth" in MongoDB
 class SessionInDB(SessionBase):
-    model_config = ConfigDict(validate_by_name=True)  ## Enables Mapping
+    model_config = ConfigDict(
+        validate_by_name=True,
+    )  ## Enables Mapping
     id: Optional[str] = (
         Field(  # Maps "_id" from Mongo to `id` field ; but returns as "id" when serialized
             default=None, alias="_id", serialization_alias="id", validation_alias="_id"
@@ -31,7 +33,7 @@ class SessionInDB(SessionBase):
     chronic_conditions: Optional[str] = "To be discovered.."
     status: Optional[Literal["Critical", "Stable", "Follow-up"]] = "Follow-up"
 
-    last_activity: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_activity: datetime = Field(default_factory=lambda: datetime.now())
 
     @field_validator("id", "doc_id", "pat_id", mode="before")
     @classmethod

@@ -50,7 +50,7 @@ async def get_session_endpoint(ses_id: str):
 
 
 @router.get("/doctor/{doc_id}")
-async def get_session_for_doctor_endpoint(doc_id: str):
+async def get_sessions_for_doctor_endpoint(doc_id: str):
     try:
         return await get_sessions_for_docid(doc_id)
 

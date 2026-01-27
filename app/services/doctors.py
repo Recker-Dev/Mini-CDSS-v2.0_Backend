@@ -46,14 +46,16 @@ async def get_doctor_profile(doc_id: str) -> DoctorPublic:
 async def authenticate_user(login_payload: DoctorLogin) -> AuthResult:
 
     existing = await find_doctor_by_email(login_payload.email)
-    if existing is None:
-        raise ValueError(f"{login_payload.email} not found.")
+    if existing is None or not verify_hash(
+        existing.hashed_password, login_payload.password
+    ):
+        raise ValueError("Invalid email or password")
 
-    if verify_hash(existing.hashed_password, login_payload.password):
-        if existing.id:
-            return AuthResult(id=existing.id, name=existing.name, authenticated=True)
+    if existing.id is None:
+        # This should never happen after a DB fetch -> if does DB has been corrupted.
+        raise RuntimeError("Doctor fetched from DB has no id")
 
-    return AuthResult(id="", name="", authenticated=True)
+    return AuthResult(id=existing.id, name=existing.name, authenticated=True)
 
 
 async def delete_doctor_profile(doc_id: str) -> DoctorPublic:

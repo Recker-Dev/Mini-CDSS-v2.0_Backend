@@ -42,7 +42,7 @@ async def create_session(data: SessionCreate) -> SessionPublic:
             await insert_patient(patient_obj, session=s)
             await insert_sesion(session_obj, session=s)
 
-    return SessionPublic.model_validate(session_obj.model_dump())
+    return SessionPublic.model_validate(session_obj, from_attributes=True)
 
 
 async def get_session(ses_id: str) -> SessionPublic:
@@ -57,10 +57,10 @@ async def get_session(ses_id: str) -> SessionPublic:
 async def get_sessions_for_docid(doc_id: str) -> List[SessionPublic]:
     exising_sessions = await find_sessions_by_docid(doc_id)
     if exising_sessions is None:
-        raise ValueError(f"No sessions found for doctor {doc_id}")
+        raise ValueError(f"No sessions found")
 
     return [
-        SessionPublic.model_validate(session.model_dump())
+        SessionPublic.model_validate(session, from_attributes=True)
         for session in exising_sessions
     ]
 
