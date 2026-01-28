@@ -10,14 +10,16 @@ def require_env(name: str) -> str:
         raise RuntimeError(f"Missing required environment variable: {name}")
     return value
 
-
+### LOAD THE NECESSARY ENV VARS 
 MONGO_URI = require_env("MONGO_URI")
 DB_NAME = require_env("DATABASE_NAME")
 ORIGINS = [
     origin.strip() for origin in require_env("ORIGINS").split(",") if origin.strip()
 ]
+GOOGLE_API_KEY = require_env("GOOGLE_API_KEY")
 
 
+### STATIC COLLECTION NAMES
 DOCTOR_COLLECTION = "doctors"
 PATIENT_COLLECTION = "patients"
 SESSION_COLLECTION = "sessions"

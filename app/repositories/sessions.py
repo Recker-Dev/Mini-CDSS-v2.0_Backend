@@ -3,7 +3,7 @@ import pymongo
 from app.db.collections import get_session_collection
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from app.models.sessions import SessionInDB
+from app.models.sessions import SessionBase, SessionInDB, SessionCreate
 
 
 async def find_session_by_id(ses_id: str) -> SessionInDB | None:
@@ -22,15 +22,13 @@ async def find_session_by_id(ses_id: str) -> SessionInDB | None:
 async def find_sessions_by_docid(doc_id: str) -> List[SessionInDB] | None:
     ## Validates the objectId
     try:
-        oid=ObjectId(doc_id)
+        oid = ObjectId(doc_id)
     except InvalidId:
         return None
 
     collection = get_session_collection()
 
-    cursor = collection.find({"doc_id": oid}).sort(
-        "last_activity", pymongo.DESCENDING
-    )
+    cursor = collection.find({"doc_id": oid}).sort("last_activity", pymongo.DESCENDING)
 
     results = await cursor.to_list(length=1000)
 
@@ -40,15 +38,10 @@ async def find_sessions_by_docid(doc_id: str) -> List[SessionInDB] | None:
     return sessions if len(sessions) != 0 else None
 
 
-async def insert_sesion(ses: SessionInDB, session=None) -> str:
+async def insert_sesion(session: SessionInDB, session_ctx=None) -> str:
     collection = get_session_collection()
 
-    doc = ses.model_dump(by_alias=True, exclude_none=True)
-    _id = doc.get("_id")
-    if _id and isinstance(_id, str):
-        doc["_id"] = ObjectId(_id)
-    doc["doc_id"] = ObjectId(doc["doc_id"])
-    doc["pat_id"] = ObjectId(doc["pat_id"])
+    doc = session.model_dump(exclude_none=True)
 
     result = await collection.insert_one(doc)
 

@@ -4,13 +4,10 @@ from bson.errors import InvalidId
 from app.models.patients import PatientInDB
 
 
-async def insert_patient(patient: PatientInDB, session=None) -> str:
+async def insert_patient(patient: PatientInDB, session_ctx=None) -> str:
     collection = get_patient_collection()
 
     doc = patient.model_dump(by_alias=True, exclude_none=True)
-    _id = doc.get("_id")
-    if _id and isinstance(_id, str):
-        doc["_id"] = ObjectId(_id)
 
     result = await collection.insert_one(doc)
     return str(result.inserted_id)

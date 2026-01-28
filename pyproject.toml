@@ -7,6 +7,9 @@ requires-python = ">=3.13"
 dependencies = [
     "argon2-cffi>=25.1.0",
     "fastapi[standard]>=0.128.0",
+    "langchain>=1.2.7",
+    "langchain-core>=1.2.7",
+    "langchain-google-genai>=4.2.0",
     "pydantic>=2.12.5",
     "pymongo>=4.16.0",
     "python-dotenv>=1.2.1",
