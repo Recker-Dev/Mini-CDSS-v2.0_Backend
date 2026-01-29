@@ -17,7 +17,10 @@ ORIGINS = [
     origin.strip() for origin in require_env("ORIGINS").split(",") if origin.strip()
 ]
 GOOGLE_API_KEY = require_env("GOOGLE_API_KEY")
-
+GROQ_API_KEY = require_env("GROQ_API_KEY")
+OLLAMA_MODEL = require_env("OLLAMA_MODEL")
+GOOGLE_MODEL = require_env("GOOGLE_MODEL")
+GROQ_MODEL = require_env("GROQ_MODEL")
 
 ### STATIC COLLECTION NAMES
 DOCTOR_COLLECTION = "doctors"

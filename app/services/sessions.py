@@ -2,6 +2,8 @@ from typing import List
 
 from bson import ObjectId
 from app.models.sessions import (
+    ChatMessages,
+    Evidence,
     SessionInDB,
     SessionCreate,
     SessionPublicDeep,
@@ -17,7 +19,10 @@ from app.repositories.sessions import (
 from app.repositories.doctors import find_doctor_by_id
 from app.repositories.patients import insert_patient
 from app.db.client import get_client
-from app.ai.sessions import validate_content_before_session_creation
+from app.ai.sessions import (
+    validate_content_before_session_creation,
+    initialize_session_differential_diagnosis,
+)
 from app.models.error import UserFacingError
 
 
@@ -39,19 +44,40 @@ async def create_session(data: SessionCreate) -> SessionPublicDeep:
         gender=data.pat_gender,
     )
 
-    decision = validate_content_before_session_creation(
+    decision = await validate_content_before_session_creation(
         data.pat_age, data.pat_gender, data.pat_note
     )
     if not decision.eligible:
         raise UserFacingError(decision.reasoning)
 
-    ## Proceed with insertion of a new session
-    session_db = SessionInDB(
-        id=new_session_id,
-        doc_id=doc_obj_id,
-        pat_id=new_patient_id,
-        **data.model_dump(exclude={"doc_id"}),
+    initial_state = await initialize_session_differential_diagnosis(
+        data.pat_age, data.pat_gender, data.pat_note
     )
+
+    ## Build a session dict
+    session_kwargs = {
+        "id": new_session_id,
+        "doc_id": doc_obj_id,
+        "pat_id": new_patient_id,
+        **data.model_dump(exclude={"doc_id"}),
+    }
+
+    ## Conditionally update session dict
+    if initial_state.safety_checklist:
+        session_kwargs["safety_checklist"] = initial_state.safety_checklist
+
+    if initial_state.positives or initial_state.negatives:
+        session_kwargs["evidence"] = Evidence(
+            positives=initial_state.positives, negatives=initial_state.negatives
+        )
+
+    if initial_state.question:
+        session_kwargs["chats"] = [
+            ChatMessages(sender="AI", content=initial_state.question)
+        ]
+
+    ## Convert to SessionDB Obj
+    session_db = SessionInDB.model_validate(session_kwargs)
 
     ## Commence transaction
     async with get_client().start_session() as s:

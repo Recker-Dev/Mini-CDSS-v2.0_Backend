@@ -14,7 +14,7 @@ async def find_session_by_id(ses_id: str) -> SessionInDB | None:
         return None
 
     collection = get_session_collection()
-    result = await collection.find_one({"_id": oid})
+    result = await collection.find_one({"id": oid})
 
     return SessionInDB.model_validate(result) if result else None
 
@@ -56,6 +56,6 @@ async def delete_session_by_id(ses_id: str) -> SessionInDB | None:
         return None
 
     collection = get_session_collection()
-    result = await collection.find_one_and_delete({"_id": oid})
+    result = await collection.find_one_and_delete({"id": oid})
 
     return SessionInDB.model_validate(result) if result else None

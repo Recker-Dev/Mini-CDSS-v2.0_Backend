@@ -25,6 +25,13 @@ class SessionEligibilityResult(BaseModel):
     reasoning: str
 
 
+class SessionInitializationResult(BaseModel):
+    positives: List[str] = []
+    negatives: List[str] = []
+    safety_checklist: list[str] = []
+    question: str
+
+
 ## Session Creation
 class SessionCreate(SessionBase):
     doc_id: str
@@ -84,48 +91,15 @@ class SessionInDB(SessionBase):
 
 
 ## Public Profile - Deep (Full details)
-class SessionPublicDeep(BaseModel):
+class SessionPublicDeep(SessionInDB):
     """Contains everything from the DB model."""
-
-    model_config = ConfigDict(
-        validate_by_name=True,
-        from_attributes=True,
-    )  ## Enables Mapping
-    id: MongoDbId = (
-        Field(  # Maps "_id" from Mongo to `id` field ; but returns as "id" when serialized
-            alias="_id",
-            serialization_alias="id",
-        )
-    )
-
-    doc_id: MongoDbId
-    pat_id: MongoDbId
-    complaint: str
-    chronic_conditions: List[str]
-
-    ## Nested Fields
-    evidences: Evidence
-    diagnoses: List[DiagnosisEntry]
-    safety_checklist: list[str]
-    chats: list[ChatMessages]
-
-    status: Literal["Critical", "Stable", "Follow-up"]
-
-    last_activity: datetime
+    pass
 
 
 class SessionPublicSparse(BaseModel):
     """Minimal view for  dashboards."""
 
-    model_config = ConfigDict(
-        validate_by_name=True,
-    )  ## Enables Mapping
-    id: MongoDbId = (
-        Field(  # Maps "_id" from Mongo to `id` field ; but returns as "id" when serialized
-            alias="_id",
-            serialization_alias="id",
-        )
-    )
+    id: MongoDbId 
     doc_id: MongoDbId
     pat_id: MongoDbId
     complaint: str = "To be discovered..."
