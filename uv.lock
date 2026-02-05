@@ -95,6 +95,7 @@ dependencies = [
     { name = "pymongo" },
     { name = "python-dotenv" },
     { name = "redis" },
+    { name = "websockets" },
 ]
 
 [package.metadata]
@@ -110,6 +111,7 @@ requires-dist = [
     { name = "pymongo", specifier = ">=4.16.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "redis", specifier = ">=7.1.0" },
+    { name = "websockets", specifier = ">=15.0.1" },
 ]
 
 [[package]]

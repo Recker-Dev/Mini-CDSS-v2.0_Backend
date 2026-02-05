@@ -1,11 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from fastapi.responses import JSONResponse
-from app.core.setup import database_setup_ops
+from app.core.setup import on_start_checkup_ops
 from app.api.doctors import router as doctor_router
 from app.api.sessions import router as session_router
+from app.api.wsDashboard import router as ws_router
 from app.core.config import ORIGINS
 from app.models.error import UserFacingError
 from pydantic import ValidationError
@@ -15,7 +16,7 @@ from fastapi.exceptions import RequestValidationError
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup
-    await database_setup_ops()
+    await on_start_checkup_ops()
     yield
 
     # shutdown
@@ -37,6 +38,7 @@ app.add_middleware(
 # 422 -> Pydantic
 # 500 -> Server
 ##########################
+
 
 ## Handles the errors that the User is supposed to see with code 400
 @app.exception_handler(UserFacingError)
@@ -89,13 +91,16 @@ async def generic_exception_handler(_, exc: Exception):
     print(f"Exception Raised: {exc}")
     return JSONResponse(
         status_code=500,
-        content={"message": "Server Error", "detail": exc}, # <- Should not be leaking error only logging; kept for now.
+        content={
+            "message": "Server Error",
+            "detail": exc,
+        },  # <- Should not be leaking error only logging; kept for now.
     )
-
 
 
 app.include_router(doctor_router)
 app.include_router(session_router)
+app.include_router(ws_router)
 
 
 @app.get("/")
