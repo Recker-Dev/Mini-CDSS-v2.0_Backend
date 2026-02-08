@@ -12,11 +12,25 @@ from app.models.error import UserFacingError
 from pydantic import ValidationError
 from fastapi.exceptions import RequestValidationError
 
+from app.workflow.graph import carry_diagnosis
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup
     await on_start_checkup_ops()
+    await carry_diagnosis(
+        last_mutation_source="Chat",
+        positive_evidence={},
+        negative_evidence={},
+        diagnoses={},
+        reasoning_chain={},
+        diagnosis_summary="",
+        diagnosis_strategy={},
+        doctor_last_chat="Patient complains about cold, cold seem to be there since last night. Fever is not exactly present but the onset can be felt seeing the patient's face. Greenish Phlegm, wet cough present in lungs, but white stuff coming out of nose.",
+        evidence_delta={},
+        diagnoses_delta={},
+    )
     yield
 
     # shutdown

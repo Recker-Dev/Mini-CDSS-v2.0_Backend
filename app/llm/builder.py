@@ -1,4 +1,4 @@
-from typing import Protocol, Type, TypeVar
+from typing import Protocol, Type, TypeVar, Literal
 from pydantic import BaseModel
 from ollama import chat
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -8,7 +8,8 @@ from app.core.config import (
     GROQ_API_KEY,
     OLLAMA_MODEL,
     GOOGLE_MODEL,
-    GROQ_MODEL,
+    GROQ_MODEL_OSS_20B,
+    GROQ_MODEL_OSS_120B,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -110,5 +111,8 @@ class LLMProviderFactory:
         )
 
     @staticmethod
-    def groq() -> StructuredLLM:
-        return GroqStructuredLLM(api_key=GROQ_API_KEY, model=GROQ_MODEL)
+    def groq(params: Literal["20B", "120B"] = "20B") -> StructuredLLM:
+        if params == "120B":
+            return GroqStructuredLLM(api_key=GROQ_API_KEY, model=GROQ_MODEL_OSS_120B)
+
+        return GroqStructuredLLM(api_key=GROQ_API_KEY, model=GROQ_MODEL_OSS_20B)

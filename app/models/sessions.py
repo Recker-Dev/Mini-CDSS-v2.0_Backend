@@ -26,9 +26,15 @@ class SessionEligibilityResult(BaseModel):
 
 
 class SessionInitializationResult(BaseModel):
-    positives: List[str] = []
-    negatives: List[str] = []
-    safety_checklist: list[str] = []
+    positives: list[str] = Field(
+        default_factory=list, description="List of all the positive symptoms"
+    )
+    negatives: list[str] = Field(
+        default_factory=list, description="List of all the negative symptoms"
+    )
+    safety_checklist: list[str] = Field(
+        default_factory=list, description="List of safety concerns raised"
+    )
     question: str
 
 
@@ -93,13 +99,14 @@ class SessionInDB(SessionBase):
 ## Public Profile - Deep (Full details)
 class SessionPublicDeep(SessionInDB):
     """Contains everything from the DB model."""
+
     pass
 
 
 class SessionPublicSparse(BaseModel):
     """Minimal view for  dashboards."""
 
-    id: MongoDbId 
+    id: MongoDbId
     doc_id: MongoDbId
     pat_id: MongoDbId
     complaint: str = "To be discovered..."
