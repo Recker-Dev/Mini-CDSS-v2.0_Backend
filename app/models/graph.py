@@ -54,10 +54,12 @@ class Diagnosis(BaseModel):
 
 
 class ReasoningStep(BaseModel):
-    thought: str = Field(description="The internal rationale of the agent")
+    thought: str = Field(
+        description="Concise clinical justification for the chosen action (decision-level, non-deliberative)"
+    )
     action_taken: Literal[
-        "Trigger Diagnosis Builder",
-        "Trigger Evidence Builder",
+        "Trigger Diagnosis Auditer",
+        "Trigger Evidence Auditer",
         "Trigger Both",
         "Request Clarification",
     ]
@@ -114,7 +116,7 @@ class EvidenceAuditerMeta(BaseModel):
             "Redundancy Check",
             "Doctor Advisory",
         ]
-    ] = []
+    ] = Field(default_factory=list)
 
     # What kind of evidence is needed
     target_clinical_types: list[Literal["Symptom", "Sign", "Lab", "History"]] = []
@@ -270,7 +272,7 @@ class DiagnosisAuditerOutput(BaseModel):
 
 
 class DifferentialDiagnosisAgentOutput(BaseModel):
-    reasoning_step: ReasoningStep
+    current_reasoning_step: ReasoningStep
     strategy: DiagnosticStrategy = Field(default_factory=DiagnosticStrategy)
     diagnosis_summary: str = Field(
         default_factory=str,
@@ -289,19 +291,27 @@ class DifferentialDiagnosisAgentOutput(BaseModel):
 
 class MiniCDSSState(BaseModel):
     # Core Data From DB/Redis
-    positive_evidence: list[Evidence] = []
-    negative_evidence: list[Evidence] = []
-    diagnoses: list[Diagnosis] = []
-    reasoning_chain: list[ReasoningStep] = []
-    diagnosis_strategy: DiagnosticStrategy | None
-    diagnosis_summary: str
+    initial_patient_notes: str = Field(
+        default_factory=str,
+        description="Initial Patient Notes collected before session starts",
+    )
+    diagnosis_summary: str = Field(
+        default_factory=str,
+        description="Summary of the current diagnosis",
+    )
     doctor_last_chat: str = Field(
         default_factory=str,
         description="The last chat entry from doctor if UI_Chat is used as entry point",
     )
 
+    positive_evidence: list[Evidence] = []
+    negative_evidence: list[Evidence] = []
+    diagnoses: list[Diagnosis] = []
+    reasoning_chain: list[ReasoningStep] = []
+    diagnosis_strategy: DiagnosticStrategy | None = None
+
     # State Diffs (The 'What changed this turn' layer)
-    last_mutation_source: Literal["UI", "Start_Diagnosis"]
+    last_mutation_source: Literal["UI", "Start_Diagnosis"] = "Start_Diagnosis"
     evidence_delta: list[EvidenceDelta] = Field(
         default_factory=list,
         description="Change of evidences since last state snapshot",
@@ -312,6 +322,6 @@ class MiniCDSSState(BaseModel):
     )
 
     # State machines
-    differential_diagnosis_output: DifferentialDiagnosisAgentOutput | None
-    evidence_audit_output: EvidenceAuditerOutput | None
-    diagnosis_audit_output: DiagnosisAuditerOutput | None
+    differential_diagnosis_output: DifferentialDiagnosisAgentOutput | None = None
+    evidence_audit_output: EvidenceAuditerOutput | None = None
+    diagnosis_audit_output: DiagnosisAuditerOutput | None = None
